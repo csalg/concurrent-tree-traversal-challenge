@@ -1,0 +1,23 @@
+package config
+
+// I know there are libraries to parse config files in yaml/toml/json etc. but I'm just keeping it simple
+// with a few constants. In production this is obviously not a good solution.
+//
+// Regarding my personal style,
+// 1. I am very distrustful of code with hardcoded values and tend to end up with quite detailed config files.
+//    But I can obviously adapt my tendencies to the team's style.
+// 2. If I don't spend time thinking of names that are clear yet concise I tend to err on the side of caution
+//    and write rather long names. After all, I have never had trouble understanding a long name.
+
+// Server settings
+
+const PAGES_TO_FETCH = 10
+const PORT = 8099 // Deprecated, use BASE_URL instead
+const BASE_URL = "http://localhost:8099"
+
+// Connection pool settings
+
+var ACTIVE_CONNECTION_TIMEOUT = 5 // Timeout values are in seconds
+var IDLE_CONNECTION_TIMEOUT = 90
+var MAX_CONNECTIONS_PER_HOST = 10
+var MAX_CONNECTIONS = 20 // Connections to any host. Not very relevant here.
