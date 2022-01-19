@@ -85,8 +85,8 @@ func (c *APIClient) GetPage(id int) (*PageResponse, error) {
 	req.Header.Add("Authorization", "Bearer "+token)
 
 	res, err := c.client.Do(req)
-	// In actual production code I would put more thought into how the sad path is handled. Some error conditions
-	// would be sent to production telemetry (e.g. sentry)
+	// In actual production code I would put significantly more thought into how the sad path is handled. Some error
+	// conditions would be sent to production telemetry (e.g. sentry), others might require notifying a user, etc.
 	if err != nil {
 		return nil, err
 	}

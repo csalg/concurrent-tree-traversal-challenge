@@ -1,3 +1,5 @@
+// The walk queue keeps the state concerning the graph traversal and exposes concurrency-safe methods.
+
 package main
 
 import "sync"
@@ -46,8 +48,6 @@ func (q *WalkQueue) RegisterPageIndexSize(size int) {
 }
 
 func (q *WalkQueue) GetTotalIndexingSize() int {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
 
 	return q.total
 }

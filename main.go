@@ -20,8 +20,8 @@ func main() {
 	fmt.Printf("Fetched indexing size for %d pages \n", walkQueue.GetPagesFetched())
 }
 
-// The way I handle the spawning and retries here is recursively. This is definitely not something I would do in production,
-// as the number of idle goroutines will scale exponentially.
+// The way I handle the spawning and retries here is recursively. This is definitely not something I would do in
+// production, as the number of idle goroutines will scale exponentially.
 // In production I would have a worker pool with n coroutines running concurrently, each with their own channel, and a
 // queue with the ids of the idle channels.
 func worker(apiClient *APIClient, walkQueue *WalkQueue, wg *sync.WaitGroup, pageToFetch *FetchPageJob, retries int) {
