@@ -8,9 +8,14 @@ type FetchPageJob struct {
 }
 
 type WalkQueue struct {
-	mutex sync.Mutex
-	items []*FetchPageJob
-	total int
+	mutex        sync.Mutex
+	items        []*FetchPageJob
+	total        int
+	pagesFetched int
+}
+
+func NewWalkQueue() *WalkQueue {
+	return &WalkQueue{}
 }
 
 func (q *WalkQueue) Enqueue(job *FetchPageJob) {
@@ -32,16 +37,24 @@ func (q *WalkQueue) Dequeue() *FetchPageJob {
 	return result
 }
 
-func (q *WalkQueue) RegisterPage(size int) {
+func (q *WalkQueue) RegisterPageIndexSize(size int) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
 	q.total += size
+	q.pagesFetched++
 }
 
-func (q *WalkQueue) GetTotalIndexingSize() int{
+func (q *WalkQueue) GetTotalIndexingSize() int {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
 	return q.total
+}
+
+func (q *WalkQueue) GetPagesFetched() int {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	return q.pagesFetched
 }

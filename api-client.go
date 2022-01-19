@@ -1,13 +1,14 @@
 package main
 
 import (
-	"net/http"
-	"time"
-	"sync"
-	"fmt"
 	"bytes"
-	"io/ioutil"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"sync"
+	"time"
 )
 
 type PageResponse struct {
@@ -16,14 +17,14 @@ type PageResponse struct {
 }
 
 type LoginResponse struct {
-	Token  string `json:"Token"`
-	Expires time.Time  `json:"Expires"`
+	Token   string    `json:"Token"`
+	Expires time.Time `json:"Expires"`
 }
 
 type APIClient struct {
-	mutex sync.RWMutex
-	client *http.Client
-	token string
+	mutex          sync.RWMutex
+	client         *http.Client
+	token          string
 	tokenExpiresAt time.Time
 }
 
@@ -38,25 +39,25 @@ func (c *APIClient) GetToken() string {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	timeTokenShouldBeRenewed :=c.tokenExpiresAt.Add(time.Second * -1 * SECONDS_TO_RENEW_TOKEN)
-	if (time.Now().Before(timeTokenShouldBeRenewed)){
+	timeTokenShouldBeRenewed := c.tokenExpiresAt.Add(time.Second * -1 * SECONDS_TO_RENEW_TOKEN)
+	if time.Now().Before(timeTokenShouldBeRenewed) {
 		// Token is still valid
 		return c.token
 	}
 
 	url := fmt.Sprintf("%s/api/login", BASE_URL)
-    payload := []byte(fmt.Sprintf(`{"username":"%s", "password":"%s"}`, API_USERNAME, API_PASSWORD))
-    req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	  if (err != nil){
-		  panic(err)
-	  }
-	  res, err := c.client.Do(req)
-	  if (err != nil){
+	payload := []byte(fmt.Sprintf(`{"username":"%s", "password":"%s"}`, API_USERNAME, API_PASSWORD))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
 		panic(err)
 	}
-	  defer res.Body.Close()
-	  body, err := ioutil.ReadAll(res.Body)
-	  if (err != nil){
+	res, err := c.client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
 		panic(err)
 	}
 	var result LoginResponse
@@ -71,23 +72,24 @@ func (c *APIClient) GetToken() string {
 }
 
 func (c *APIClient) GetPage(id int) (*PageResponse, error) {
-	// TODO Get token
-	// token := c.GetToken()
+	token := c.GetToken()
 	url := fmt.Sprintf("%s/api/page?id=%d", BASE_URL, id)
-	req, err := http.NewRequest("POST", url, nil)
-
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Add("Authorization", "Bearer "+token)
+
 	res, err := c.client.Do(req)
-	if (err != nil){
-	  panic(err)
-  }
+	if err != nil {
+		return nil, err
+	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("Status is %d", res.Status))
+	}
 	var result PageResponse
-	// Check for status codes
-	// 401 Unauthorized
 	if err := json.Unmarshal(body, &result); err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -99,12 +101,11 @@ func (c *APIClient) GetPage(id int) (*PageResponse, error) {
 func NewHttpClient() *http.Client {
 	// Ref: https://www.loginradius.com/blog/async/tune-the-go-http-client-for-high-performance/
 	t := http.DefaultTransport.(*http.Transport).Clone()
-	t.MaxIdleConns = 100
-	t.MaxConnsPerHost = 100
-	t.MaxIdleConnsPerHost = 100
+	t.MaxConnsPerHost = MAX_CONNECTIONS_PER_HOST
+	t.MaxIdleConnsPerHost = MAX_CONNECTIONS
 
 	return &http.Client{
-		Timeout:   10 * time.Second,
+		Timeout:   ACTIVE_CONNECTION_TIMEOUT * time.Second,
 		Transport: t,
 	}
 }
