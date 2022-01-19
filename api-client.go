@@ -1,3 +1,5 @@
+// The api client abstracts away dealing with http and auth directly.
+
 package main
 
 import (
@@ -45,6 +47,8 @@ func (c *APIClient) GetToken() string {
 		return c.token
 	}
 
+	// The rest of the routine could also be moved to a private method, might be a bit cleaner.
+	// It's not super long or complex stuff so I'm keeping it here.
 	url := fmt.Sprintf("%s/api/login", BASE_URL)
 	payload := []byte(fmt.Sprintf(`{"username":"%s", "password":"%s"}`, API_USERNAME, API_PASSWORD))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
@@ -81,6 +85,8 @@ func (c *APIClient) GetPage(id int) (*PageResponse, error) {
 	req.Header.Add("Authorization", "Bearer "+token)
 
 	res, err := c.client.Do(req)
+	// In actual production code I would put more thought into how the sad path is handled. Some error conditions
+	// would be sent to production telemetry (e.g. sentry)
 	if err != nil {
 		return nil, err
 	}
