@@ -1,4 +1,4 @@
-package config
+package main
 
 // I know there are libraries to parse config files in yaml/toml/json etc. but I'm just keeping it simple
 // with a few constants. In production this is obviously not a good solution.
@@ -12,8 +12,11 @@ package config
 // Server settings
 
 const PAGES_TO_FETCH = 10
-const PORT = 8099 // Deprecated, use BASE_URL instead
 const BASE_URL = "http://localhost:8099"
+const RETRIES_PER_PAGE = 10 // Number of times to retry
+const API_USERNAME = "api"
+const API_PASSWORD = "secret"
+const SECONDS_TO_RENEW_TOKEN = 2
 
 // Connection pool settings
 

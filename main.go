@@ -1,13 +1,10 @@
-// Init the login service
-// Init the graph traversal queue
-// Add the first page to the queue
-// Run the main loop with wait group
-// Print result
+package main
 
-// Main loop:
-// Get login
-// Get page
-// Register response
-// Enqueue children
-// Dequeue anything that is in the queue and spawn new goroutines (increment wg)
-// wg.Done
+func main(){
+	apiClient := NewApiClient()
+	apiClient.GetToken()
+	apiClient.GetPage(1)
+}
+
+// TODO
+// Make it work with login but without network timeouts or random errors.
